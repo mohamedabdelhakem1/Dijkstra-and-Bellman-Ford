@@ -15,14 +15,15 @@ public class Graph implements IGraph {
 	private int num_v;
 	private int num_e;
 	/**
-	 *  
-	 * el key da el ID bta3 el node w el value edges list kul edge feh source el hwa el node nfsha
-	 * w fe dist el hwa el node el ry7lha 
-	 * w fe weight bta3 el edge
-	 * (u, v, w) ---> (source, dist, weight)
+	 * 
+	 * el key da el ID bta3 el node w el value edges list kul edge feh source el hwa
+	 * el node nfsha w fe dist el hwa el node el ry7lha w fe weight bta3 el edge (u,
+	 * v, w) ---> (source, dist, weight)
 	 **/
 	private Map<Integer, List<Edge>> adj_list = new HashMap<Integer, List<Edge>>();
+	private List<Edge> edges= new ArrayList<>();
 	private List<Integer> order; // de bta3t dijkstra mlhash lazma gher fe function el order
+
 	@Override
 	public void readGraph(File file) {
 		Scanner reader = null;
@@ -35,26 +36,25 @@ public class Graph implements IGraph {
 			for (int i = 0; i < num_v; i++) {
 				adj_list.put(i, new ArrayList<Edge>());
 			}
-			for(int i = 0; i < num_e; i++) {
+			for (int i = 0; i < num_e; i++) {
 				line = reader.nextLine();
 				splited = line.split(" ");
 				Edge e = new Edge();
 				e.setSource(Integer.parseInt(splited[0]));
 				e.setDist(Integer.parseInt(splited[1]));
 				e.setWeight(Integer.parseInt(splited[2]));
-				if(e.getSource() >= num_v || e.getDist() >= num_v) {
+				if (e.getSource() >= num_v || e.getDist() >= num_v) {
 					reader.close();
 					throw new RuntimeErrorException(new Error());
 				}
+				edges.add(e);
 				adj_list.get(e.getSource()).add(e);
 			}
 			reader.close();
-			if(reader.hasNext()) {
-				throw new RuntimeErrorException(new Error());
-			}
-			
+
 		} catch (Exception e) {
-			if(reader != null) reader.close();
+			if (reader != null)
+				reader.close();
 			throw new RuntimeErrorException(new Error());
 		}
 	}
@@ -74,7 +74,7 @@ public class Graph implements IGraph {
 	@Override
 	public ArrayList<Integer> getNeighbors(int v) {
 		ArrayList<Integer> neighbors = new ArrayList<Integer>();
-		for(Edge e: adj_list.get(v)) {
+		for (Edge e : adj_list.get(v)) {
 			neighbors.add(e.getDist());
 		}
 		return neighbors;
@@ -82,7 +82,8 @@ public class Graph implements IGraph {
 
 	@Override
 	public void runDijkstra(int src, int[] distances) {
-		if(src >= num_v) throw new RuntimeErrorException(new Error());
+		if (src >= num_v)
+			throw new RuntimeErrorException(new Error());
 		int usedInf = Integer.MAX_VALUE / 2;
 		order = new ArrayList<Integer>();
 		for (int i = 0; i < distances.length; i++) {
@@ -90,26 +91,30 @@ public class Graph implements IGraph {
 		}
 		distances[src] = 0;
 		Set<Integer> unvisited = new HashSet<Integer>(adj_list.keySet());
-		while(!unvisited.isEmpty()) {
+		while (!unvisited.isEmpty()) {
 			int u = nextMin(distances, unvisited);
 			unvisited.remove(u);
 			order.add(u);
-			for(Edge e : adj_list.get(u)) {
-				if(!unvisited.contains(e.getDist())) continue;
-				if(distances[u] == usedInf) continue;
-				if(distances[u] + e.getWeight() < distances[e.getDist()]) {
+			for (Edge e : adj_list.get(u)) {
+				if (!unvisited.contains(e.getDist()))
+					continue;
+				if (distances[u] == usedInf)
+					continue;
+				if (distances[u] + e.getWeight() < distances[e.getDist()]) {
 					distances[e.getDist()] = distances[u] + e.getWeight();
 				}
 			}
 		}
 	}
-	
+
 	private int nextMin(int[] dist, Set<Integer> unvisited) {
 		int index = -1;
 		for (int i = 0; i < dist.length; i++) {
-			if(!unvisited.contains(i)) continue;
-			if(index == -1) index = i;
-			if(dist[i] < dist[index]) {
+			if (!unvisited.contains(i))
+				continue;
+			if (index == -1)
+				index = i;
+			if (dist[i] < dist[index]) {
 				index = i;
 			}
 		}
@@ -124,32 +129,56 @@ public class Graph implements IGraph {
 
 	@Override
 	public boolean runBellmanFord(int src, int[] distances) {
-		// TODO Auto-generated method stub
-		return false;
+		int inf = Integer.MAX_VALUE / 2;
+		for (int i = 0; i < distances.length; i++) {
+			distances[i] = inf;
+		}
+		distances[src] = 0;
+		for (int i = 0; i < num_v - 1; i++) {
+			for(Edge e : edges) {
+				if (distances[e.source] == inf) continue;
+				if(distances[e.source]+ e.weight < distances[e.dist]) {
+					distances[e.dist] = distances[e.source]+ e.weight;
+				}
+			}
+		}
+		for(Edge e : edges) {
+			if (distances[e.source] == inf) continue;
+			if(distances[e.source]+ e.weight < distances[e.dist]) {
+				return false;
+			}
+		}
+			return true;
 	}
-	
-	private class Edge{
+
+	private class Edge {
 		private int source;
+		private int dist;
+		private int weight;
 		public int getSource() {
 			return source;
 		}
+
 		public void setSource(int source) {
 			this.source = source;
 		}
+
 		public int getDist() {
 			return dist;
 		}
+
 		public void setDist(int dist) {
 			this.dist = dist;
 		}
+
 		public int getWeight() {
 			return weight;
 		}
+
 		public void setWeight(int weight) {
 			this.weight = weight;
 		}
-		private int dist;
-		private int weight;
+
 	}
 
 }
